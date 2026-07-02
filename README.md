@@ -1,0 +1,112 @@
+# ATSlay 🎯
+
+**AI-powered ATS Resume Analyzer** — upload a resume, paste a job description, and get an instant compatibility score powered by real NLP (TF-IDF keyword extraction, cosine similarity, stemming, section/format auditing).
+
+## Why this is more than a keyword matcher
+
+Most "ATS checkers" just do a naive string search. ATSlay instead:
+
+- **Extracts the most important terms from the JD itself** using TF-IDF, instead of a hardcoded keyword list.
+- **Stems words before matching** (Porter Stemmer) — so "managing", "managed", and "management" all count as a match for "manage".
+- **Computes semantic similarity** between resume and JD using cosine similarity over term-frequency vectors, catching relevance even when exact words differ.
+- **Audits formatting** — bullet usage, contact info presence, action verbs, resume length, multi-column layout risk (a real cause of ATS parsing failures).
+- **Detects resume sections** (Education, Experience, Projects, Skills, etc.) via pattern matching and flags what's missing.
+- Combines all four signals into a single weighted **ATS Score** with a full breakdown, not just one number.
+
+## Tech Stack
+
+| Layer      | Tech |
+|------------|------|
+| Frontend   | React 18, Vite, Tailwind CSS, React Router, Axios |
+| Backend    | Node.js, Express, JWT auth, Multer |
+| Database   | MongoDB + Mongoose |
+| NLP        | `natural` (TF-IDF, Porter stemming), `stopword`, custom cosine-similarity + scoring engine |
+| Parsing    | `pdf-parse` (PDF), `mammoth` (DOCX) |
+
+## Features
+
+- 🔐 JWT-based auth (register/login)
+- 📄 Upload resume as PDF or DOCX, drag-and-drop supported
+- 📊 Real-time ATS score with keyword / semantic / section / format breakdown
+- 🟢🔴 Matched vs. missing keyword chips
+- 🧭 Section coverage detection (Education, Skills, Projects, etc.)
+- 💡 Actionable, specific suggestions to improve the resume
+- 🕘 Analysis history per user, with the ability to revisit or delete past scans
+
+## Project Structure
+
+```
+ATSlay/
+├── backend/
+│   ├── config/db.js
+│   ├── controllers/       # auth + resume analysis logic
+│   ├── middleware/        # JWT auth, multer upload, error handler
+│   ├── models/            # User, Resume (Mongoose schemas)
+│   ├── routes/            # /api/auth, /api/resume
+│   ├── utils/
+│   │   ├── parseResume.js # PDF/DOCX text extraction
+│   │   └── nlpScorer.js   # TF-IDF, cosine similarity, scoring engine
+│   └── server.js
+└── frontend/
+    └── src/
+        ├── api/axios.js
+        ├── components/    # Navbar, UploadForm, ScoreCard, KeywordList, HistoryList
+        ├── context/AuthContext.jsx
+        └── pages/         # Home, Login, Register, Dashboard, History, HistoryDetail
+```
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- A MongoDB connection string (local MongoDB or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
+
+### 1. Backend setup
+
+```bash
+cd backend
+npm install
+cp .env.example .env
+# edit .env and set MONGO_URI + JWT_SECRET
+npm run dev
+```
+
+Backend runs at `http://localhost:5000`.
+
+### 2. Frontend setup
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Frontend runs at `http://localhost:5173`.
+
+### 3. Try it out
+1. Register an account.
+2. Go to Dashboard → upload a resume (PDF/DOCX) → paste a job description.
+3. Click **Analyze Resume** and review your score breakdown, matched/missing keywords, and suggestions.
+
+## How the ATS Score is calculated
+
+```
+ATS Score = (Keyword Match × 40%) + (Semantic Similarity × 25%)
+          + (Section Coverage × 15%) + (Format Quality × 20%)
+```
+
+- **Keyword Match** — % of top TF-IDF terms from the JD found (after stemming) in the resume.
+- **Semantic Similarity** — cosine similarity between resume and JD term-frequency vectors.
+- **Section Coverage** — % of expected resume sections detected.
+- **Format Quality** — deductions for missing contact info, too few bullet points/action verbs, poor length, or table-based layouts that break ATS parsers.
+
+## Resume bullet points for this project
+
+> **ATSlay | React, Node.js, Express, MongoDB, NLP**
+> - Built a full-stack ATS resume analyzer that scores resumes against any job description in real time using TF-IDF keyword extraction, Porter stemming, and cosine-similarity semantic matching — helping users identify missing keywords before submitting applications.
+> - Designed a JWT-authenticated REST API with Node.js/Express and MongoDB, including PDF/DOCX parsing, a weighted multi-factor scoring engine, and persistent analysis history.
+> - Built a responsive React (Vite + Tailwind) frontend with drag-and-drop upload, animated score gauges, and keyword-gap visualization, rendering ATS results in under 2 seconds.
+
+## License
+MIT — free to use for learning, portfolio, or resume projects.
