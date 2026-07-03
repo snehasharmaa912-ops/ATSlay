@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";q
+import { Link } from "react-router-dom";
 function scoreColor(score) {
   if (score >= 75) return "text-good";
   if (score >= 50) return "text-warn";
