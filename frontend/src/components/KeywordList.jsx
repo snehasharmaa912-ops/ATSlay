@@ -1,8 +1,10 @@
+import { CheckCircle2, XCircle, PartyPopper } from "lucide-react";
 export default function KeywordList({ matched = [], missing = [] }) {
   return (
     <div className="grid md:grid-cols-2 gap-4">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-        <h3 className="font-semibold text-good mb-3">
+        <h3 className="font-semibold text-good mb-3 flex items-center gap-1.5">
+          <CheckCircle2 size={16} />
           Matched Keywords ({matched.length})
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -21,12 +23,16 @@ export default function KeywordList({ matched = [], missing = [] }) {
       </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-        <h3 className="font-semibold text-bad mb-3">
+        <h3 className="font-semibold text-bad mb-3 flex items-center gap-1.5">
+          <XCircle size={16} />
           Missing Keywords ({missing.length})
         </h3>
         <div className="flex flex-wrap gap-2">
           {missing.length === 0 && (
-            <p className="text-sm text-slate-500">Great — no major gaps found!</p>
+            <p className="text-sm text-slate-500 flex items-center gap-1.5">
+              <PartyPopper size={14} className="text-good" />
+              Great — no major gaps found!
+            </p>
           )}
           {missing.map((kw) => (
             <span
