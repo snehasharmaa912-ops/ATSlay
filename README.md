@@ -15,6 +15,16 @@ Most "ATS checkers" just do a naive string search. ATSlay instead:
 - **Detects resume sections** (Education, Experience, Projects, Skills, etc.) via pattern matching and flags what's missing.
 - Combines all four signals into a single weighted **ATS Score** with a full breakdown, not just one number.
 
+## Known Limitations
+
+Being upfront about what this doesn't handle perfectly:
+
+- **PDF text extraction isn't perfect.** `pdf-parse` reads embedded text layers, so it can misread multi-column layouts (text order gets jumbled), fail on scanned/image-based PDFs (no OCR is performed), and occasionally merge or drop characters from resumes with unusual fonts or heavy graphic design.
+- **DOCX parsing via `mammoth` extracts raw text only** — tables, text boxes, and embedded images/graphics are stripped, which is actually representative of how most real ATS systems behave, but worth knowing.
+- **TF-IDF keyword extraction is frequency-based, not truly semantic** — it can occasionally surface generic terms as "important" if a JD is short or repetitive, and it has no concept of synonyms outside of stemming (e.g., it won't connect "led a team" with "team leadership" the way a large language model might).
+- **Section detection relies on regex pattern matching** against common header phrasing — a resume using unconventional section titles (e.g., "My Journey" instead of "Experience") may be flagged as missing a section it actually has.
+
+These are solvable with more advanced NLP (embeddings, OCR fallback, LLM-based extraction) — documented here as a deliberate scope decision for a v1, not an oversight.
 ## Tech Stack
 
 | Layer      | Tech |
