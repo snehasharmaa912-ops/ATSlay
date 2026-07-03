@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import {
   ScanSearch,
@@ -5,8 +6,9 @@ import {
   ListChecks,
   LayoutTemplate,
   ArrowRight,
-  CheckCircle2,
-  XCircle,
+  UploadCloud,
+  BrainCircuit,
+  ClipboardCheck,
   Zap,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -42,21 +44,46 @@ const FEATURES = [
   },
 ];
 
+const STEPS = [
+  {
+    icon: UploadCloud,
+    step: "01",
+    title: "Upload & Paste",
+    desc: "Drop your resume (PDF/DOCX) and paste the job description you're targeting.",
+  },
+  {
+    icon: BrainCircuit,
+    step: "02",
+    title: "NLP Does the Work",
+    desc: "TF-IDF extracts key terms, stemming normalizes them, cosine similarity measures relevance.",
+  },
+  {
+    icon: ClipboardCheck,
+    step: "03",
+    title: "Get Your Breakdown",
+    desc: "See your score, matched/missing keywords, and specific fixes — in under 2 seconds.",
+  },
+];
+
+const TECH = [
+  "React", "Node.js", "Express", "MongoDB", "TF-IDF", "Cosine Similarity", "JWT Auth", "Tailwind CSS",
+];
+
 export default function Home() {
   const { user } = useAuth();
 
   return (
     <div className="relative overflow-hidden">
-      {/* Ambient gradient glow background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-32 w-[32rem] h-[32rem] bg-indigo-600/25 rounded-full blur-[120px]" />
-        <div className="absolute top-40 -right-32 w-[28rem] h-[28rem] bg-fuchsia-600/20 rounded-full blur-[120px]" />
+      {/* Animated gradient glow background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden bg-grid">
+        <div className="animate-blob absolute -top-40 -left-32 w-[32rem] h-[32rem] bg-indigo-600/25 rounded-full blur-[120px]" />
+        <div className="animate-blob-delay absolute top-40 -right-32 w-[28rem] h-[28rem] bg-fuchsia-600/20 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-1/3 w-[24rem] h-[24rem] bg-emerald-600/10 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto px-6 pt-20 pb-24">
+      <div className="relative max-w-5xl mx-auto px-6 pt-20 pb-16">
         {/* Hero */}
-        <div className="text-center max-w-3xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto animate-fade-in-up">
           <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20 mb-6">
             <Zap size={12} className="fill-accent" />
             Real NLP, not a keyword list
@@ -83,54 +110,25 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Visual score-card mockup */}
-        <div className="mt-20 mx-auto max-w-xl">
-          <div className="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-2xl shadow-black/40">
-            <div className="flex items-center gap-6">
-              <div className="relative w-28 h-28 shrink-0">
-                <svg width="112" height="112" className="-rotate-90">
-                  <circle cx="56" cy="56" r="46" stroke="#1e293b" strokeWidth="10" fill="none" />
-                  <circle
-                    cx="56"
-                    cy="56"
-                    r="46"
-                    stroke="#22c55e"
-                    strokeWidth="10"
-                    fill="none"
-                    strokeDasharray={2 * Math.PI * 46}
-                    strokeDashoffset={2 * Math.PI * 46 * 0.15}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-bold text-good">85</span>
-                  <span className="text-[10px] text-slate-500">ATS Score</span>
-                </div>
-              </div>
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 size={16} className="text-good shrink-0" />
-                  <span className="text-slate-300">React, Node.js, MongoDB matched</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 size={16} className="text-good shrink-0" />
-                  <span className="text-slate-300">All key sections detected</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <XCircle size={16} className="text-bad shrink-0" />
-                  <span className="text-slate-300">Missing: AWS, cloud platforms</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Tech stack strip */}
+        <div className="mt-16 flex flex-wrap justify-center gap-2 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+          {TECH.map((t) => (
+            <span
+              key={t}
+              className="text-xs px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400"
+            >
+              {t}
+            </span>
+          ))}
         </div>
 
         {/* Feature grid */}
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 mt-16">
-          {FEATURES.map(({ icon: Icon, title, desc, color, bg }) => (
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 mt-14">
+          {FEATURES.map(({ icon: Icon, title, desc, color, bg }, i) => (
             <div
               key={title}
-              className="group bg-slate-900 border border-slate-800 rounded-xl p-5 text-left hover:border-slate-700 transition"
+              className="animate-fade-in-up group bg-slate-900 border border-slate-800 rounded-xl p-5 text-left hover:border-slate-700 hover:-translate-y-0.5 transition-all"
+              style={{ animationDelay: `${0.15 + i * 0.05}s` }}
             >
               <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center mb-3`}>
                 <Icon size={20} className={color} />
@@ -139,6 +137,40 @@ export default function Home() {
               <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
             </div>
           ))}
+        </div>
+
+        {/* How it works */}
+        <div className="mt-24">
+          <h2 className="text-2xl font-bold text-center mb-2">How it works</h2>
+          <p className="text-slate-500 text-center text-sm mb-10">
+            Three steps, no manual keyword guessing required.
+          </p>
+          <div className="grid md:grid-cols-3 gap-6 relative">
+            <div className="hidden md:block absolute top-8 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+            {STEPS.map(({ icon: Icon, step, title, desc }) => (
+              <div key={step} className="relative text-center">
+                <div className="relative z-10 w-16 h-16 mx-auto rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-4">
+                  <Icon size={26} className="text-accent" />
+                </div>
+                <span className="text-xs font-mono text-slate-600">{step}</span>
+                <h3 className="font-semibold mt-1 mb-1.5">{title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed px-4">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-24 text-center bg-gradient-to-br from-slate-900 to-slate-900/50 border border-slate-800 rounded-2xl p-10">
+          <h2 className="text-2xl font-bold mb-2">Ready to see your score?</h2>
+          <p className="text-slate-400 text-sm mb-6">Free, instant, and it takes less than a minute.</p>
+          <Link
+            to={user ? "/dashboard" : "/register"}
+            className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent hover:bg-indigo-500 font-semibold transition shadow-lg shadow-accent/25"
+          >
+            {user ? "Go to Dashboard" : "Analyze My Resume"}
+            <ArrowRight size={18} className="group-hover:translate-x-0.5 transition" />
+          </Link>
         </div>
       </div>
     </div>
