@@ -96,3 +96,9 @@ ATS Score = (Keyword Match × 40%) + (Semantic Similarity × 25%)
 - **Section Coverage** — % of expected resume sections detected.
 - **Format Quality** — deductions for missing contact info, too few bullet points/action verbs, poor length, or table-based layouts that break ATS parsers.
 
+Built with ❤️ in Dehradun
+
+**Sneha Sharma**
+📧 snehasharmaa912@gmail.com
+📸 [Instagram](https://www.instagram.com/_snehasharma_._?igsh=bGF6eGoxcGUxMmVv)
+💼 [LinkedIn](https://www.linkedin.com/in/snehasharmaa2006)
