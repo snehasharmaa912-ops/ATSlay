@@ -7,14 +7,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      window.addEventListener("error", function (e) {
-        alert("ATSlay JS Error:\n" + e.message + "\nFile: " + e.filename + "\nLine: " + e.lineno);
-      });
-      window.addEventListener("unhandledrejection", function (e) {
-        alert("ATSlay Promise Error:\n" + (e.reason && e.reason.message ? e.reason.message : e.reason));
-      });
-    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
