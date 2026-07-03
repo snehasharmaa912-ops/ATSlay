@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { UploadCloud, FileText, Briefcase } from "lucide-react";
 export default function UploadForm({ onAnalyze, loading }) {
   const [file, setFile] = useState(null);
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [dragActive, setDragActive] = useState(false);
+
   const handleFile = (f) => {
     if (!f) return;
     const ext = f.name.split(".").pop().toLowerCase();
@@ -46,7 +48,14 @@ export default function UploadForm({ onAnalyze, loading }) {
           className="hidden"
           onChange={(e) => handleFile(e.target.files[0])}
         />
-        <label htmlFor="resume-upload" className="cursor-pointer">
+        <label htmlFor="resume-upload" className="cursor-pointer flex flex-col items-center">
+          <span className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-3">
+            {file ? (
+              <FileText size={22} className="text-accent" />
+            ) : (
+              <UploadCloud size={22} className="text-accent" />
+            )}
+          </span>
           <p className="font-medium">
             {file ? file.name : "Drag & drop your resume, or tap to browse"}
           </p>
@@ -54,13 +63,16 @@ export default function UploadForm({ onAnalyze, loading }) {
         </label>
       </div>
 
-      <input
-        type="text"
-        placeholder="Job title (optional) — e.g. SDE Intern at Google"
-        value={jobTitle}
-        onChange={(e) => setJobTitle(e.target.value)}
-        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-accent"
-      />
+      <div className="relative">
+        <Briefcase size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+        <input
+          type="text"
+          placeholder="Job title (optional) — e.g. SDE Intern at Google"
+          value={jobTitle}
+          onChange={(e) => setJobTitle(e.target.value)}
+          className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-accent"
+        />
+      </div>
 
       <textarea
         placeholder="Paste the full job description here..."
@@ -73,9 +85,16 @@ export default function UploadForm({ onAnalyze, loading }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 rounded-xl bg-accent hover:bg-indigo-500 transition font-semibold disabled:opacity-50"
+        className="w-full py-3 rounded-xl bg-accent hover:bg-indigo-500 transition font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        {loading ? "Analyzing..." : "Analyze Resume"}
+        {loading ? (
+          <>
+            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            Analyzing...
+          </>
+        ) : (
+          "Analyze Resume"
+        )}
       </button>
     </form>
   );
