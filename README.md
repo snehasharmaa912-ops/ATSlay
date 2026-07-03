@@ -2,6 +2,8 @@
 
 **AI-powered ATS Resume Analyzer** — upload a resume, paste a job description, and get an instant compatibility score powered by real NLP (TF-IDF keyword extraction, cosine similarity, stemming, section/format auditing).
 
+🔗 **Live demo:** [https://at-slay.vercel.app](https://at-slay.vercel.app)
+
 ## Why this is more than a keyword matcher
 
 Most "ATS checkers" just do a naive string search. ATSlay instead:
@@ -22,6 +24,7 @@ Most "ATS checkers" just do a naive string search. ATSlay instead:
 | Database   | MongoDB + Mongoose |
 | NLP        | `natural` (TF-IDF, Porter stemming), `stopword`, custom cosine-similarity + scoring engine |
 | Parsing    | `pdf-parse` (PDF), `mammoth` (DOCX) |
+| Hosting    | Vercel (frontend), Render (backend), MongoDB Atlas (database) |
 
 ## Features
 
@@ -35,7 +38,6 @@ Most "ATS checkers" just do a naive string search. ATSlay instead:
 
 ## Project Structure
 
-```
 ATSlay/
 ├── backend/
 │   ├── config/db.js
@@ -53,36 +55,31 @@ ATSlay/
         ├── components/    # Navbar, UploadForm, ScoreCard, KeywordList, HistoryList
         ├── context/AuthContext.jsx
         └── pages/         # Home, Login, Register, Dashboard, History, HistoryDetail
-```
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- A MongoDB connection string (local MongoDB or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
+- A MongoDB connection string (local MongoDB or a free MongoDB Atlas cluster)
 
 ### 1. Backend setup
 
-```bash
 cd backend
 npm install
 cp .env.example .env
 # edit .env and set MONGO_URI + JWT_SECRET
 npm run dev
-```
 
-Backend runs at `http://localhost:5000`.
+Backend runs at http://localhost:5000.
 
 ### 2. Frontend setup
 
-```bash
 cd frontend
 npm install
 cp .env.example .env
 npm run dev
-```
 
-Frontend runs at `http://localhost:5173`.
+Frontend runs at http://localhost:5173.
 
 ### 3. Try it out
 1. Register an account.
@@ -91,12 +88,11 @@ Frontend runs at `http://localhost:5173`.
 
 ## How the ATS Score is calculated
 
-```
 ATS Score = (Keyword Match × 40%) + (Semantic Similarity × 25%)
           + (Section Coverage × 15%) + (Format Quality × 20%)
-```
 
 - **Keyword Match** — % of top TF-IDF terms from the JD found (after stemming) in the resume.
 - **Semantic Similarity** — cosine similarity between resume and JD term-frequency vectors.
 - **Section Coverage** — % of expected resume sections detected.
 - **Format Quality** — deductions for missing contact info, too few bullet points/action verbs, poor length, or table-based layouts that break ATS parsers.
+
