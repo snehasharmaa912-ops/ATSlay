@@ -19,11 +19,7 @@ app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Request logging: concise colored logs in dev, Apache-style combined logs in prod
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
-
-// General API rate limit: 100 requests per 15 minutes per IP
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -32,8 +28,6 @@ const apiLimiter = rateLimit({
   message: { message: "Too many requests, please try again later." },
 });
 app.use("/api", apiLimiter);
-
-// Stricter limit on auth routes to slow down brute-force login/register attempts
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
