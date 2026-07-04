@@ -1,0 +1,217 @@
+openapi: 3.0.3
+info:
+  title: ATSlay API
+  description: AI-powered ATS Resume Analyzer backend API
+  version: 1.0.0
+  contact:
+    name: Sneha Sharma
+    email: sharmasnehaa08@gmail.com
+servers:
+  - url: https://atslay-backend.onrender.com/api
+    description: Production
+  - url: http://localhost:5000/api
+    description: Local development
+
+tags:
+  - name: Auth
+    description: User registration and authentication
+  - name: Resume
+    description: Resume upload, analysis, and history
+
+paths:
+  /health:
+    get:
+      tags: [Auth]
+      summary: Health check
+      responses:
+        "200":
+          description: API is up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  service: { type: string, example: ATSlay API }
+                  time: { type: string, format: date-time }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string, example: Jane Doe }
+                email: { type: string, format: email, example: jane@example.com }
+                password: { type: string, minLength: 6, example: password123 }
+      responses:
+        "201":
+          description: User created, returns JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error or email already registered
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in an existing user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        "200":
+          description: Login successful, returns JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid email or password
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the current logged-in user's profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user profile
+        "401":
+          description: Not authorized
+
+  /resume/analyze:
+    post:
+      tags: [Resume]
+      summary: Upload a resume and job description for ATS analysis
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [resume, jobDescription]
+              properties:
+                resume:
+                  type: string
+                  format: binary
+                  description: PDF or DOCX file, max 5MB
+                jobTitle:
+                  type: string
+                  example: SDE Intern at Google
+                jobDescription:
+                  type: string
+                  minLength: 20
+      responses:
+        "201":
+          description: Analysis result with full score breakdown
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResult"
+        "400":
+          description: Missing/invalid file or job description
+        "401":
+          description: Not authorized
+
+  /resume/history:
+    get:
+      tags: [Resume]
+      summary: Get the logged-in user's past analyses
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Array of past analyses (summary fields only)
+
+  /resume/{id}:
+    get:
+      tags: [Resume]
+      summary: Get a single past analysis by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Full analysis record
+        "404":
+          description: Analysis not found
+    delete:
+      tags: [Resume]
+      summary: Delete a past analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted successfully
+        "404":
+          description: Analysis not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        token: { type: string, description: JWT access token }
+
+    AnalysisResult:
+      type: object
+      properties:
+        atsScore: { type: integer, example: 78 }
+        keywordScore: { type: integer }
+        semanticScore: { type: integer }
+        sectionScore: { type: integer }
+        formatScore: { type: integer }
+        matchedKeywords:
+          type: array
+          items: { type: string }
+        missingKeywords:
+          type: array
+          items: { type: string }
+        detectedSections:
+          type: array
+          items: { type: string }
+        missingSections:
+          type: array
+          items: { type: string }
+        suggestions:
+          type: array
+          items: { type: string }
+        id: { type: string }
+        createdAt: { type: string, format: date-time }
