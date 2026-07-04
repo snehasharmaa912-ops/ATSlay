@@ -1,10 +1,8 @@
-const natural = require("natural");
+  const natural = require("natural");
 const sw = require("stopword");
-
+const { normalizeSynonym } = require("./synonyms");
 const tokenizer = new natural.WordTokenizer();
 const stemmer = natural.PorterStemmer;
-
-// Common resume section headers we look for (regex, case-insensitive)
 const SECTION_PATTERNS = {
   "Contact Info": /(email|phone|linkedin|github|contact)/i,
   Summary: /(summary|objective|profile)/i,
@@ -15,7 +13,6 @@ const SECTION_PATTERNS = {
   Achievements: /(achievements?|awards?|certifications?|accomplishments?)/i,
 };
 
-// Action verbs that strengthen resume bullet points
 const ACTION_VERBS = [
   "built", "developed", "designed", "implemented", "created", "led", "managed",
   "optimized", "automated", "engineered", "launched", "improved", "reduced",
@@ -29,35 +26,41 @@ function cleanAndTokenize(text) {
 }
 
 function stemTokens(tokens) {
-  return tokens.map((t) => stemmer.stem(t));
+  return tokens.map((t) => stemmer.stem(normalizeSynonym(t)));
+}
+function buildBigrams(tokens) {
+  const bigrams = [];
+  for (let i = 0; i < tokens.length - 1; i++) {
+    bigrams.push(`${tokens[i]}_${tokens[i + 1]}`);
+  }
+  return bigrams;
 }
 
-/**
- * Builds a frequency map of stemmed tokens -> { stem, original, count }
- */
+function displayPhrase(term) {
+  return term.includes("_") ? term.replace(/_/g, " ") : term;
+}
+
 function buildFrequencyMap(tokens) {
   const map = {};
   tokens.forEach((token) => {
-    const stem = stemmer.stem(token);
+    const stem = stemmer.stem(normalizeSynonym(token));
     if (!map[stem]) map[stem] = { stem, original: token, count: 0 };
     map[stem].count += 1;
   });
   return map;
 }
-
-/**
- * Extracts top keywords from the job description using TF-IDF against
- * itself + resume as a mini corpus, so the "important" JD terms rise up.
- */
 function extractTopKeywords(jdText, resumeText, topN = 25) {
   const TfIdf = natural.TfIdf;
   const tfidf = new TfIdf();
 
-  const jdTokens = cleanAndTokenize(jdText).join(" ");
-  const resumeTokens = cleanAndTokenize(resumeText).join(" ");
+  const jdUnigrams = cleanAndTokenize(jdText);
+  const resumeUnigrams = cleanAndTokenize(resumeText);
 
-  tfidf.addDocument(jdTokens);
-  tfidf.addDocument(resumeTokens);
+  const jdCorpus = [...jdUnigrams, ...buildBigrams(jdUnigrams)].join(" ");
+  const resumeCorpus = [...resumeUnigrams, ...buildBigrams(resumeUnigrams)].join(" ");
+
+  tfidf.addDocument(jdCorpus);
+  tfidf.addDocument(resumeCorpus);
 
   const scores = [];
   tfidf.listTerms(0).forEach((item) => {
@@ -67,12 +70,9 @@ function extractTopKeywords(jdText, resumeText, topN = 25) {
   return scores
     .sort((a, b) => b.tfidf - a.tfidf)
     .slice(0, topN)
-    .map((s) => s.term);
+    .map((s) => displayPhrase(s.term));
 }
 
-/**
- * Cosine similarity between two texts using stemmed term-frequency vectors.
- */
 function cosineSimilarity(textA, textB) {
   const tokensA = stemTokens(cleanAndTokenize(textA));
   const tokensB = stemTokens(cleanAndTokenize(textB));
@@ -98,22 +98,33 @@ function cosineSimilarity(textA, textB) {
   if (magA === 0 || magB === 0) return 0;
   return dot / (Math.sqrt(magA) * Math.sqrt(magB));
 }
-
-/**
- * Matches JD keywords against resume, using stemming so
- * "managing" matches "manage", "developed" matches "developer", etc.
- */
 function matchKeywords(jdKeywords, resumeText) {
-  const resumeStems = new Set(stemTokens(cleanAndTokenize(resumeText)));
+  const resumeTokensRaw = cleanAndTokenize(resumeText);
+  const resumeStems = new Set(stemTokens(resumeTokensRaw));
+
   const matched = [];
   const missing = [];
 
   jdKeywords.forEach((kw) => {
-    const stem = stemmer.stem(kw);
-    if (resumeStems.has(stem)) {
-      matched.push(kw);
+    const words = kw.split(" ");
+    const isPhrase = words.length > 1;
+
+    if (isPhrase) {
+      const allWordsPresent = words.every((w) =>
+        resumeStems.has(stemmer.stem(normalizeSynonym(w)))
+      );
+      if (allWordsPresent) {
+        matched.push(kw);
+      } else {
+        missing.push(kw);
+      }
     } else {
-      missing.push(kw);
+      const stem = stemmer.stem(normalizeSynonym(kw));
+      if (resumeStems.has(stem)) {
+        matched.push(kw);
+      } else {
+        missing.push(kw);
+      }
     }
   });
 
@@ -183,9 +194,6 @@ function analyzeFormat(resumeText) {
   return { score: Math.max(0, Math.round(score)), notes };
 }
 
-/**
- * Main entry point: scores a resume against a job description.
- */
 function scoreResume(resumeText, jobDescription) {
   const jdKeywords = extractTopKeywords(jobDescription, resumeText, 25);
   const { matched, missing } = matchKeywords(jdKeywords, resumeText);
@@ -202,6 +210,7 @@ function scoreResume(resumeText, jobDescription) {
   );
 
   const format = analyzeFormat(resumeText);
+
   const atsScore = Math.round(
     keywordScore * 0.4 +
       semanticScore * 0.25 +
@@ -233,4 +242,4 @@ function scoreResume(resumeText, jobDescription) {
   };
 }
 
-module.exports = { scoreResume, extractTopKeywords, cosineSimilarity };
+module.exports = { scoreResume, extractTopKeywords, cosineSimilarity, matchKeywords };
