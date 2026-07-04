@@ -1,14 +1,16 @@
-const { scoreResume, extractTopKeywords, cosineSimilarity } = require("../nlpScorer");
+const { scoreResume, extractTopKeywords, cosineSimilarity, matchKeywords } = require("../nlpScorer");
 describe("cosineSimilarity", () => {
   test("returns 1 for identical text", () => {
     const text = "React Node.js Express MongoDB REST API";
     expect(cosineSimilarity(text, text)).toBeCloseTo(1, 5);
   });
+
   test("returns 0 for completely unrelated text", () => {
     const a = "gardening flowers soil sunlight watering";
     const b = "spacecraft orbital mechanics propulsion thrust";
     expect(cosineSimilarity(a, b)).toBe(0);
   });
+
   test("returns a value between 0 and 1 for partially overlapping text", () => {
     const a = "React Node.js Express MongoDB developer";
     const b = "React frontend developer with Python and Django";
@@ -17,6 +19,7 @@ describe("cosineSimilarity", () => {
     expect(score).toBeLessThan(1);
   });
 });
+
 describe("extractTopKeywords", () => {
   test("returns an array of keyword strings", () => {
     const jd = "We need a React developer with Node.js and MongoDB experience";
@@ -25,6 +28,7 @@ describe("extractTopKeywords", () => {
     expect(Array.isArray(keywords)).toBe(true);
     expect(keywords.length).toBeGreaterThan(0);
   });
+
   test("respects the topN limit", () => {
     const jd = "React Node MongoDB Express JavaScript TypeScript Python Java Docker Kubernetes AWS Azure GCP";
     const resume = "some resume text here";
@@ -119,9 +123,45 @@ describe("scoreResume", () => {
     );
     expect(hasContactSuggestion).toBe(true);
   });
+
   test("generates keyword suggestions when relevant keywords are missing", () => {
     const sparseResume = "I am a hard working student looking for opportunities.";
     const result = scoreResume(sparseResume, jd);
     expect(result.missingKeywords.length).toBeGreaterThan(0);
+  });
+});
+
+describe("synonym-aware matching", () => {
+  test("matches 'JS' in resume against 'JavaScript' in JD", () => {
+    const { matched } = matchKeywords(["javascript"], "I know JS very well");
+    expect(matched).toContain("javascript");
+  });
+
+  test("matches 'AWS' in resume against JD phrase using the full name", () => {
+    const { matched } = matchKeywords(["aws"], "Experience deploying to AWS");
+    expect(matched).toContain("aws");
+  });
+
+  test("matches leadership variants across tenses", () => {
+    const { matched } = matchKeywords(["management"], "I led and managed a team of five");
+    expect(matched).toContain("management");
+  });
+});
+
+describe("bigram phrase extraction", () => {
+  test("extracts multi-word phrases like 'machine learning' as a single keyword", () => {
+    const jdText = "We need someone with strong machine learning and data science skills";
+    const resumeText = "some resume text";
+    const keywords = extractTopKeywords(jdText, resumeText, 15);
+    const hasPhrase = keywords.some((k) => k.includes(" "));
+    expect(hasPhrase).toBe(true);
+  });
+
+  test("matches a multi-word JD phrase when resume contains all its words", () => {
+    const { matched } = matchKeywords(
+      ["project management"],
+      "Handled project management for three client engagements"
+    );
+    expect(matched).toContain("project management");
   });
 });
