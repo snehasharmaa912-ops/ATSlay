@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { CheckCircle2, XCircle, Lightbulb, AlertCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Lightbulb, AlertCircle, Download } from "lucide-react";
 import api from "../api/axios";
 import UploadForm from "../components/UploadForm";
 import ScoreCard from "../components/ScoreCard";
 import KeywordList from "../components/KeywordList";
+import { downloadAnalysisReport } from "../utils/generateReport";
 
 export default function Dashboard() {
   const [result, setResult] = useState(null);
+  const [meta, setMeta] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,6 +26,7 @@ export default function Dashboard() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setResult(data);
+      setMeta({ jobTitle: jobTitle || "Untitled Role", fileName: file.name, createdAt: data.createdAt });
     } catch (err) {
       setError(err.response?.data?.message || "Analysis failed. Please try again.");
     } finally {
@@ -51,6 +54,16 @@ export default function Dashboard() {
 
       {result && (
         <div className="space-y-6">
+          <div className="flex justify-end">
+            <button
+              onClick={() => downloadAnalysisReport(result, meta)}
+              className="flex items-center gap-2 text-sm px-4 py-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-accent hover:text-accent transition"
+            >
+              <Download size={15} />
+              Download PDF Report
+            </button>
+          </div>
+
           <ScoreCard result={result} />
           <KeywordList matched={result.matchedKeywords} missing={result.missingKeywords} />
 
@@ -98,4 +111,4 @@ export default function Dashboard() {
       )}
     </div>
   );
-    }
+}
